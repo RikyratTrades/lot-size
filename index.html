@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rikyrat Lot Size Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #6a1b9a;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        h2 {
+            color: #6a1b9a;
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: 600;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        select, input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        select {
+            background-color: #f9f9f9;
+        }
+        input[type="number"] {
+            background-color: #fff;
+            -moz-appearance: textfield; /* Firefox */
+            -webkit-appearance: none; /* Safari and Chrome */
+            appearance: none; /* Other browsers */
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        button {
+            width: 100%;
+            padding: 21px;
+            background-color: #6a1b9a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: #5a148d;
+            transform: scale(1.3);
+        }
+        .result {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .result hr {
+            border: 0;
+            height: 2px;
+            background-color: #6a1b9a;
+            margin: 10px 0;
+        }
+        .result div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .result p {
+            margin: 8px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .result span {
+            font-weight: 600;
+            color: #6a1b9a;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        // <button class="back-button" onclick="window.location.href='index.html'">&larr;</button>
+        <h2>Rikyrat Lot Size Calculator</h2>
+        <label for="pair">Currency Pair</label>
+        <select id="pair">
+            <option value="XAUUSD">XAUUSD</option>
+            <option value="EURUSD">EURUSD</option>
+            <option value="USDJPY">USDJPY</option>
+        </select>
+        
+        <label for="currency">Account Currency</label>
+        <select id="currency">
+            <option value="USD">USD</option>
+            <option value="INR">INR</option>
+        </select>
+        
+        <label for="balance">Account Balance</label>
+        <input type="number" id="balance" step="0.01">
+        
+        <label for="risk">Risk %</label>
+        <input type="number" id="risk" step="0.01">
+        
+        <label for="stopLoss">Stop Loss in Pips</label>
+        <input type="number" id="stopLoss" step="1">
+        
+        <button onclick="calculateLotSize()">Calculate</button>
+        
+        <div class="result">
+            <h2>Result</h2>
+            <hr>
+            <div>
+                <p>Standard Lots:</p>
+                <p><span id="lotSize">0.00</span></p>
+            </div>
+            <div>
+                <p>Risk:</p>
+                <p><span id="riskAmount">0.00</span></p>
+            </div>
+            <div>
+                <p>Units:</p>
+                <p><span id="units">0</span></p>
+            </div>
+            <div>
+                <p>Mini Lots:</p>
+                <p><span id="miniLots">0.00</span></p>
+            </div>
+            <div>
+                <p>Micro Lots:</p>
+                <p><span id="microLots">0.00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load stored values from localStorage
+            const pair = localStorage.getItem('pair') || 'XAUUSD';
+            const currency = localStorage.getItem('currency') || 'USD';
+            const balance = localStorage.getItem('balance') || '';
+            const risk = localStorage.getItem('risk') || '';
+
+            document.getElementById('pair').value = pair;
+            document.getElementById('currency').value = currency;
+            document.getElementById('balance').value = balance;
+            document.getElementById('risk').value = risk;
+            // Stop Loss is not loaded from localStorage, allowing user input
+        });
+
+        function calculateLotSize() {
+            const pair = document.getElementById('pair').value;
+            const currency = document.getElementById('currency').value;
+            const balance = parseFloat(document.getElementById('balance').value);
+            const riskPercentage = parseFloat(document.getElementById('risk').value);
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+
+            if (isNaN(balance) || isNaN(riskPercentage) || isNaN(stopLoss) || balance <= 0 || riskPercentage <= 0 || stopLoss <= 0) {
+                alert('Please enter valid input values.');
+                return;
+            }
+
+            // Save input values to localStorage
+            localStorage.setItem('pair', pair);
+            localStorage.setItem('currency', currency);
+            localStorage.setItem('balance', balance);
+            localStorage.setItem('risk', riskPercentage);
+            // Do not store stopLoss in localStorage
+
+            // Convert risk percentage to decimal
+            const risk = riskPercentage / 100;
+
+            // Use a fixed conversion rate for simplicity; you can replace with actual rates
+            const conversionRate = currency === 'USD' ? 1 : 75.5; // Example conversion rate
+
+            // Calculate risk amount
+            const riskAmount = balance * risk;
+
+            // Calculate standard lot size
+            const lotSize = riskAmount / (stopLoss * conversionRate);
+            
+            // Calculate Units, Mini Lots, and Micro Lots
+            const units = Math.round(lotSize * 100); // 100 × Standard Lots, rounded to nearest integer
+            const miniLots = (units / 10).toFixed(3); // 10 × Units, to three decimal places
+            const microLots = (units).toFixed(3); // Units, to three decimal places
+
+            document.getElementById('lotSize').textContent = lotSize.toFixed(3);
+            document.getElementById('riskAmount').textContent = `$${riskAmount.toFixed(2)}`;
+            document.getElementById('units').textContent = units; // No decimal places
+            document.getElementById('miniLots').textContent = miniLots;
+            document.getElementById('microLots').textContent = microLots;
+        }
+    </script>
+</body>
+</html>
